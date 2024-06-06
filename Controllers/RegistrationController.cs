@@ -13,14 +13,12 @@ namespace CRM.Controllers
     [ApiController]
     public class RegistrationController : ControllerBase
     {
-
         private readonly IConfiguration _configuration;
 
 
         public RegistrationController(IConfiguration configuration)
         {
             _configuration = configuration;
-            
         }
 
         [HttpPost]
@@ -53,6 +51,17 @@ namespace CRM.Controllers
             SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("SNCon").ToString());
             Dal dal = new Dal();
             response = dal.UserApproval(registration, connection);
+            return response;
+        }
+
+        [HttpPost]
+        [Route("ArticalApproval")]
+        public Response ArticalApproval(Article article)
+        {
+            Response response = new Response();
+            SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("SNCon").ToString());
+            Dal dal = new Dal();
+            response = dal.ArticalApproval(article, connection);
             return response;
         }
     }

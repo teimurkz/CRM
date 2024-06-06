@@ -8,5 +8,7 @@ public class Article
     public string Email { get; set; }
     public string Image { get; set; }
     public int IsActive { get; set; }
+    
     public int IsApproved { get; set; }
+    public string type { get; set; }
 }

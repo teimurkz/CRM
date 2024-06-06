@@ -9,11 +9,32 @@ public class Dal
     public Response Registration(Registration registration, SqlConnection connection)
     {
         Response response = new Response();
-        SqlCommand cmd =
-            new SqlCommand("INSERT INTO Registration(Name,Email,Password,PhoneNumber,IsActive,IsApproved) VALUES ('" +
-                           registration.Name + "','" + registration.Email + "','" + registration.Password + "','" +
-                           registration.PhoneNumber + "',1,0'", connection);
-        
+        connection.Open();
+        SqlCommand checkEmailCmd = new SqlCommand(
+            "SELECT COUNT(*) FROM Registration WHERE Email = @Email",
+            connection
+        );
+        checkEmailCmd.Parameters.AddWithValue("@Email", registration.Email);
+        int count = (int)checkEmailCmd.ExecuteScalar();
+
+        if (count > 0)
+        {
+            response.StatusMessage = "Email already exists";
+            response.StatusCode = 100;
+            return response;
+        }
+        connection.Close();
+
+        SqlCommand cmd = new SqlCommand(
+            "INSERT INTO Registration (Name, Email, Password, PhoneNumber, IsActive, IsApproved) VALUES (@Name, @Email, @Password, @PhoneNumber, @IsActive, @IsApproved)",
+            connection
+        );
+        cmd.Parameters.AddWithValue("@Name", registration.Name);
+        cmd.Parameters.AddWithValue("@Email", registration.Email);
+        cmd.Parameters.AddWithValue("@Password", registration.Password);
+        cmd.Parameters.AddWithValue("@PhoneNumber", registration.PhoneNumber);
+        cmd.Parameters.AddWithValue("@IsActive", 1);
+        cmd.Parameters.AddWithValue("@IsApproved", 0);
         connection.Open();
         int i = cmd.ExecuteNonQuery();
         connection.Close();
@@ -21,18 +42,17 @@ public class Dal
         {
             response.StatusCode = 200;
             response.StatusMessage = "Registration succsessfull";
-            
         }
         else
         {
-                response.StatusCode = 100;
-                response.StatusMessage = "Registration failed";
-            
+            response.StatusCode = 100;
+            response.StatusMessage = "Registration failed";
         }
+
         return response;
     }
 
-    public Response Login(Registration registration,SqlConnection connection)
+    public Response Login(Registration registration, SqlConnection connection)
     {
         SqlDataAdapter dataAdapter =
             new SqlDataAdapter(
@@ -44,7 +64,7 @@ public class Dal
         if (dt.Rows.Count > 0)
         {
             response.StatusCode = 200;
-            response.StatusMessage = "Registration succsessfull";
+            response.StatusMessage = "Login succsessfull";
             Models.Registration reg = new Registration();
             reg.Id = Convert.ToInt32(dt.Rows[0]["Id"]);
             reg.Name = Convert.ToString(dt.Rows[0]["Name"]);
@@ -54,17 +74,18 @@ public class Dal
         else
         {
             response.StatusCode = 100;
-            response.StatusMessage = "Registration failed";
+            response.StatusMessage = "Login failed";
             response.Registration = null;
         }
 
         return response;
     }
 
-    public Response UserApproval(Registration registration,SqlConnection connection)
+    public Response UserApproval(Registration registration, SqlConnection connection)
     {
         Response response = new Response();
-        SqlCommand cmd = new SqlCommand("UPDATE Registration SET IsApproved = 1 WHERE Id = '" + registration.Id + "'AND IsActive = 1'",
+        SqlCommand cmd = new SqlCommand(
+            "UPDATE Registration SET IsApproved = 1 WHERE Id = '" + registration.Id + "'AND IsActive = 1'",
             connection);
         connection.Open();
         int i = cmd.ExecuteNonQuery();
@@ -77,18 +98,19 @@ public class Dal
         else
         {
             response.StatusCode = 100;
-            response.StatusMessage = "User approval filed";  
+            response.StatusMessage = "User approval filed";
         }
+
         return response;
     }
 
-    public Response News(News news, SqlConnection connection)
+    public Response AddNews(News news, SqlConnection connection)
     {
         Response response = new Response();
         SqlCommand cmd =
             new SqlCommand(
                 "INSERT INTO News(Titile,Content,Email,IsActive,CreatedOn) VALUES ('" + news.Title + "','" +
-                news.Content + "','" + news.Email + "','1',GETDATE())", connection);
+                news.Content + "','" + news.Email + "','1,GETDATE())", connection);
         connection.Open();
         int i = cmd.ExecuteNonQuery();
         connection.Close();
@@ -102,7 +124,7 @@ public class Dal
             response.StatusCode = 100;
             response.StatusMessage = "News creation failed";
         }
-        
+
         return response;
     }
 
@@ -137,16 +159,120 @@ public class Dal
             {
                 response.StatusCode = 100;
                 response.StatusMessage = " No News data found";
-                response.listNews = null; 
+                response.listNews = null;
             }
-          
         }
         else
         {
             response.StatusCode = 100;
             response.StatusMessage = " No News data found";
-            response.listNews = null;  
+            response.listNews = null;
         }
+
+        return response;
+    }
+
+
+    public Response AddArticle(Article article, SqlConnection connection)
+    {
+        Response response = new Response();
+        SqlCommand cmd =
+            new SqlCommand(
+                "INSERT INTO Article(Titile,Content,Email,Image,IsActive,IsApproved) VALUES ('" + article.Title +
+                "','" +
+                article.Content + "','" + article.Image + "',1,0)", connection);
+        connection.Open();
+        int i = cmd.ExecuteNonQuery();
+        connection.Close();
+        if (i > 0)
+        {
+            response.StatusCode = 200;
+            response.StatusMessage = "Article created";
+        }
+        else
+        {
+            response.StatusCode = 100;
+            response.StatusMessage = "Article creation failed";
+        }
+
+        return response;
+    }
+
+    public Response ArticleList(Article article, SqlConnection connection)
+    {
+        Response response = new Response();
+        SqlDataAdapter dataAdapter = null;
+        if (article.type == "User")
+        {
+            new SqlDataAdapter("SELECT * FROM Article  WHERE Email = '" + article.Email + "' AND  IsActive = 1",
+                connection);
+        }
+
+        if (article.type == "Page")
+        {
+            new SqlDataAdapter("SELECT * FROM Article WHERE IsActive = 1", connection);
+        }
+
+        DataTable dt = new DataTable();
+        dataAdapter.Fill(dt);
+        List<Article> lstArticle = new List<Article>();
+        if (dt.Rows.Count > 0)
+        {
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+                Article art = new Article();
+                article.Id = Convert.ToInt32(dt.Rows[i]["Id"]);
+                article.Title = Convert.ToString(dt.Rows[i]["Title"]);
+                article.Content = Convert.ToString(dt.Rows[i]["Content"]);
+                article.Email = Convert.ToString(dt.Rows[i]["Email"]);
+                article.IsActive = Convert.ToInt32(dt.Rows[i]["IsActive"]);
+                article.Image = Convert.ToString(dt.Rows[i]["Image"]);
+                lstArticle.Add(art);
+            }
+
+            if (lstArticle.Count > 0)
+            {
+                response.StatusCode = 200;
+                response.StatusMessage = "Article data found";
+                response.ListArticles = lstArticle;
+            }
+            else
+            {
+                response.StatusCode = 100;
+                response.StatusMessage = " No Article data found";
+                response.ListArticles = null;
+            }
+        }
+        else
+        {
+            response.StatusCode = 100;
+            response.StatusMessage = " No News data found";
+            response.listNews = null;
+        }
+
+        return response;
+    }
+
+    public Response ArticalApproval(Article article, SqlConnection connection)
+    {
+        Response response = new Response();
+        SqlCommand cmd = new SqlCommand(
+            "UPDATE Article SET IsApproved = 1 WHERE Id = '" + article.Id + "'AND IsActive = 1'",
+            connection);
+        connection.Open();
+        int i = cmd.ExecuteNonQuery();
+        connection.Close();
+        if (i > 0)
+        {
+            response.StatusCode = 200;
+            response.StatusMessage = "Article Approved";
+        }
+        else
+        {
+            response.StatusCode = 100;
+            response.StatusMessage = "Article approval filed";
+        }
+
         return response;
     }
 }
