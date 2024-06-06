@@ -44,5 +44,15 @@ namespace CRM.Controllers
             response = dal.ArticleList(article,connection);
             return response;
         }
+        [HttpPost]
+        [Route("ArticleList")]
+        public Response ArticleApproval(Article article)
+        {
+            Response response = new Response();
+            SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("SNCon").ToString());
+            Dal dal = new Dal();
+            response = dal.ArticalApproval(article,connection);
+            return response;
+        }
     }
 }

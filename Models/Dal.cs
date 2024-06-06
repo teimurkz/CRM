@@ -275,4 +275,77 @@ public class Dal
 
         return response;
     }
+    
+    public Response StaffRegistration(Staff staff, SqlConnection connection)
+    {
+        Response response = new Response();
+        connection.Open();
+        SqlCommand checkEmailCmd = new SqlCommand(
+            "SELECT COUNT(*) FROM Staff WHERE Email = @Email",
+            connection
+        );
+        checkEmailCmd.Parameters.AddWithValue("@Email", staff.Email);
+        int count = (int)checkEmailCmd.ExecuteScalar();
+
+        if (count > 0)
+        {
+            response.StatusMessage = "Email already exists";
+            response.StatusCode = 100;
+            return response;
+        }
+        connection.Close();
+        SqlCommand cmd = new SqlCommand(
+            "INSERT INTO Staff (Name, Email, Password, IsActive) VALUES (@Name, @Email, @Password, @IsActive)",
+            connection
+        );
+        cmd.Parameters.AddWithValue("@Name", staff.Name);
+        cmd.Parameters.AddWithValue("@Email", staff.Email);
+        cmd.Parameters.AddWithValue("@Password", staff.Password);
+        cmd.Parameters.AddWithValue("@IsActive", 1);
+        connection.Open();
+        int i = cmd.ExecuteNonQuery();
+        connection.Close();
+        if (i > 0)
+        {
+            response.StatusCode = 200;
+            response.StatusMessage = "Staff registration succsessfull";
+        }
+        else
+        {
+            response.StatusCode = 100;
+            response.StatusMessage = "Staff registration failed";
+        }
+
+        return response;
+    }
+
+    public Response DeleteStaff(Staff staff, SqlConnection connection)
+    {
+        Response response = new Response();
+        SqlCommand cmd = new SqlCommand(
+            "DELETE FROM Staff WHERE Id = @Id AND Email = @Email AND Password = @Password",
+            connection
+        );
+        
+        cmd.Parameters.AddWithValue("@Id", staff.Id);
+        cmd.Parameters.AddWithValue("@Email", staff.Email);
+        cmd.Parameters.AddWithValue("@Password", staff.Password);
+        connection.Open();
+        
+        int i = cmd.ExecuteNonQuery();
+        connection.Close();
+        if (i > 0)
+        {
+            response.StatusCode = 200;
+            response.StatusMessage = "Staff deleted succsessfullly";
+        }
+        else
+        {
+            response.StatusCode = 100;
+            response.StatusMessage = "Staff deleted failed";
+        }
+
+        return response;
+    }
+
 }

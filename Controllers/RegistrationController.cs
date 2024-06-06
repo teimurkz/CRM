@@ -64,5 +64,28 @@ namespace CRM.Controllers
             response = dal.ArticalApproval(article, connection);
             return response;
         }
+        
+        [HttpPost]
+        [Route("StaffRegistration")]
+        public Response StaffRegistration(Staff staff)
+        {
+            Response response = new Response();
+            SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("SNCon").ToString());
+            Dal dal = new Dal();
+            response = dal.StaffRegistration(staff, connection);
+            return response;
+        }
+        
+        [HttpDelete]
+        [Route("DeleteStaff")]
+        public Response DeleteStaff(Staff staff)
+        {
+            Response response = new Response();
+            SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("SNCon").ToString());
+            Dal dal = new Dal();
+            response = dal.DeleteStaff(staff, connection);
+            return response;
+        }
+        
     }
 }
