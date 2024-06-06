@@ -23,6 +23,7 @@ public class Dal
             response.StatusCode = 100;
             return response;
         }
+
         connection.Close();
 
         SqlCommand cmd = new SqlCommand(
@@ -275,7 +276,7 @@ public class Dal
 
         return response;
     }
-    
+
     public Response StaffRegistration(Staff staff, SqlConnection connection)
     {
         Response response = new Response();
@@ -293,6 +294,7 @@ public class Dal
             response.StatusCode = 100;
             return response;
         }
+
         connection.Close();
         SqlCommand cmd = new SqlCommand(
             "INSERT INTO Staff (Name, Email, Password, IsActive) VALUES (@Name, @Email, @Password, @IsActive)",
@@ -326,12 +328,12 @@ public class Dal
             "DELETE FROM Staff WHERE Id = @Id AND Email = @Email AND Password = @Password",
             connection
         );
-        
+
         cmd.Parameters.AddWithValue("@Id", staff.Id);
         cmd.Parameters.AddWithValue("@Email", staff.Email);
         cmd.Parameters.AddWithValue("@Password", staff.Password);
         connection.Open();
-        
+
         int i = cmd.ExecuteNonQuery();
         connection.Close();
         if (i > 0)
@@ -343,6 +345,37 @@ public class Dal
         {
             response.StatusCode = 100;
             response.StatusMessage = "Staff deleted failed";
+        }
+
+        return response;
+    }
+
+    public Response AddEvents(Events events, SqlConnection connection)
+    {
+        Response response = new Response();
+        SqlCommand cmd = new SqlCommand(
+            "INSERT INTO Events (Title, Content, Email, IsActive, CreatedOn) VALUES (@Title, @Content, @Email, @IsActive, @CreatedOn)",
+            connection
+        );
+        cmd.Parameters.AddWithValue("@Title", events.Title);
+        cmd.Parameters.AddWithValue("@Content", events.Content);
+        cmd.Parameters.AddWithValue("@Email", events.Email);
+        cmd.Parameters.AddWithValue("@IsActive", 1);
+        cmd.Parameters.AddWithValue("@CreatedOn", events.CreatedOn);
+
+        connection.Open();
+        int i = cmd.ExecuteNonQuery();
+        connection.Close();
+
+        if (i > 0)
+        {
+            response.StatusCode = 200;
+            response.StatusMessage = "Event created";
+        }
+        else
+        {
+            response.StatusCode = 100;
+            response.StatusMessage = "Event creation failed";
         }
 
         return response;

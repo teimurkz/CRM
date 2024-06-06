@@ -7,6 +7,6 @@ public class Response
     public List<Registration> listRegistration { get; set; }
     public List<Article> ListArticles { get; set; }
     public List<News> listNews { get; set; }
-    public List<Event> listEvents { get; set; }
+    public List<Events> listEvents { get; set; }
     public Registration Registration { get; set; }
 }

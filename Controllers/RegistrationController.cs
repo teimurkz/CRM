@@ -87,5 +87,16 @@ namespace CRM.Controllers
             return response;
         }
         
+        [HttpPost]
+        [Route("AddEvents")]
+        public Response AddEvents(Events events)
+        {
+            Response response = new Response();
+            SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("SNCon").ToString());
+            Dal dal = new Dal();
+            response = dal.AddEvents(events, connection);
+            return response;
+        }
+        
     }
 }
