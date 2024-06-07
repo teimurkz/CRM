@@ -350,18 +350,17 @@ public class Dal
         return response;
     }
 
-    public Response AddEvents(Events events, SqlConnection connection)
+    public Response AddEvent(Events events, SqlConnection connection)
     {
         Response response = new Response();
         SqlCommand cmd = new SqlCommand(
-            "INSERT INTO Events (Title, Content, Email, IsActive, CreatedOn) VALUES (@Title, @Content, @Email, @IsActive, @CreatedOn)",
+            "INSERT INTO Events (Title, Content, Email, IsActive, CreatedOn) VALUES (@Title, @Content, @Email, @IsActive, GETDATE())",
             connection
         );
         cmd.Parameters.AddWithValue("@Title", events.Title);
         cmd.Parameters.AddWithValue("@Content", events.Content);
         cmd.Parameters.AddWithValue("@Email", events.Email);
         cmd.Parameters.AddWithValue("@IsActive", 1);
-        cmd.Parameters.AddWithValue("@CreatedOn", events.CreatedOn);
 
         connection.Open();
         int i = cmd.ExecuteNonQuery();
@@ -380,5 +379,50 @@ public class Dal
 
         return response;
     }
+    public Response EventList(SqlConnection connection)
+    {
+        Response response = new Response();
+        SqlDataAdapter dataAdapter = new SqlDataAdapter("SELECT * FROM Events WHERE IsActive = 1", connection);
+        DataTable dt = new DataTable();
+        
+        dataAdapter.Fill(dt);
+        List<Events> lstEvnt = new List<Events>();
+        if (dt.Rows.Count > 0)
+        {
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+                Events events = new Events();
+                events.Id = Convert.ToInt32(dt.Rows[i]["Id"]);
+                events.Title = Convert.ToString(dt.Rows[i]["Title"]);
+                events.Content = Convert.ToString(dt.Rows[i]["Content"]);
+                events.Email = Convert.ToString(dt.Rows[i]["Email"]);
+                events.IsActive = Convert.ToInt32(dt.Rows[i]["IsActive"]);
+                events.CreatedOn = Convert.ToString(dt.Rows[i]["CreatedOn"]);
+                lstEvnt.Add(events);
+            }
+
+            if (lstEvnt.Count > 0)
+            {
+                response.StatusCode = 200;
+                response.StatusMessage = "News data found";
+                response.listEvents = lstEvnt;
+            }
+            else
+            {
+                response.StatusCode = 100;
+                response.StatusMessage = " No News data found";
+                response.listNews = null;
+            }
+        }
+        else
+        {
+            response.StatusCode = 100;
+            response.StatusMessage = " No News data found";
+            response.listNews = null;
+        }
+
+        return response;
+    }
+
 
 }

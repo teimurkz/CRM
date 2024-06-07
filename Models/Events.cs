@@ -8,4 +8,5 @@ public class Events
     public string Email { get; set; }
     public string CreatedOn { get; set; }
     public int IsActive { get; set; }
+
 }
