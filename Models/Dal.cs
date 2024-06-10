@@ -12,7 +12,8 @@ public class Dal
         SqlCommand cmd =
             new SqlCommand("INSERT INTO Registration(Name,Email,Password,PhoneNumber,IsActive,IsApproved) VALUES ('" +
                            registration.Name + "','" + registration.Email + "','" + registration.Password + "','" +
-                           registration.PhoneNumber + "',1,0'", connection);
+                           registration.PhoneNumber + "',1,0)", connection);
+
         
         connection.Open();
         int i = cmd.ExecuteNonQuery();
@@ -45,10 +46,10 @@ public class Dal
         {
             response.StatusCode = 200;
             response.StatusMessage = "Registration succsessfull";
-            Models.Registration reg = new Registration();
+            Registration reg = new Registration();
             reg.Id = Convert.ToInt32(dt.Rows[0]["Id"]);
             reg.Name = Convert.ToString(dt.Rows[0]["Name"]);
-            reg.Name = Convert.ToString(dt.Rows[0]["Email"]);
+            reg.Email = Convert.ToString(dt.Rows[0]["Email"]);
             response.Registration = reg;
         }
         else
